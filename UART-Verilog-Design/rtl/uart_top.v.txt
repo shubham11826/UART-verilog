@@ -1,0 +1,36 @@
+// UART TOP
+
+module uart_top #(
+    parameter CLK_FREQ  = 25_000_000,
+    parameter BAUD_RATE = 390_625
+)(
+    input clk,
+    input rst,
+    input tx_start,
+    input [7:0] tx_data,
+    output tx,
+    output tx_done,
+    input rx,
+    output [7:0] rx_data,
+    output rx_valid
+);
+
+    wire baud_tick;
+    wire sample_tick;
+
+    baud_rate_gen #(CLK_FREQ, BAUD_RATE)
+        u_baud(clk, rst, baud_tick, sample_tick);
+
+    uart_tx u_tx(
+        clk, rst, baud_tick,
+        tx_start, tx_data,
+        tx, , tx_done
+    );
+
+    uart_rx u_rx(
+        clk, rst, sample_tick,
+        rx,
+        rx_data, rx_valid, ,
+    );
+
+endmodule
