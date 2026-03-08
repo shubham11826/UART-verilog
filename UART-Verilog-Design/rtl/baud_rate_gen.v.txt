@@ -1,0 +1,48 @@
+// BAUD RATE GENERATOR
+
+module baud_rate_gen #(
+    parameter CLK_FREQ  = 25_000_000,
+    parameter BAUD_RATE = 390_625
+)(
+    input  wire clk,
+    input  wire rst,
+    output reg  baud_tick,
+    output reg  sample_tick
+);
+
+    localparam TX_DIV = CLK_FREQ / BAUD_RATE;          // 64
+    localparam RX_DIV = CLK_FREQ / (BAUD_RATE * 16);   // 4
+
+    reg [15:0] tx_cnt;
+    reg [15:0] rx_cnt;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            tx_cnt <= 0;
+            baud_tick <= 0;
+        end else begin
+            if (tx_cnt == TX_DIV-1) begin
+                tx_cnt <= 0;
+                baud_tick <= 1;
+            end else begin
+                tx_cnt <= tx_cnt + 1;
+                baud_tick <= 0;
+            end
+        end
+    end
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            rx_cnt <= 0;
+            sample_tick <= 0;
+        end else begin
+            if (rx_cnt == RX_DIV-1) begin
+                rx_cnt <= 0;
+                sample_tick <= 1;
+            end else begin
+                rx_cnt <= rx_cnt + 1;
+                sample_tick <= 0;
+            end
+        end
+    end
+endmodule
